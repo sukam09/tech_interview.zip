@@ -314,7 +314,44 @@
 <details>
   <summary><span style="border-bottom:0.05em solid"><strong>Table Full Scan과 Index Range Scan 을 설명해주세요.</strong></span></summary>
 <hr>
-
+   <p><strong>Table Full Scan</strong></p>
+   <ul>
+      <li>테이블에 속한 블록 전체를 읽어서 사용자가 원하는 데이터를 찾음</li>
+   </ul>
+   <ul>
+      <li>시퀀셜 액세스 + Multi Block I/O</li>
+   </ul>
+   <ul>
+      <li>Table Full Scan은 피해야 한다는 인식이 많지만 오히려 인덱스를 사용하는 것이 성능을 떨어뜨리는 경우가 더 많음</li>
+   </ul>
+   <ul>
+      <li>캐시에서 못 찾으면 한 번의 I/O Call로 인접한 수십-수백 개의 블록을 한꺼번에 불러오는 것이 좋음</li>
+   </ul>
+   <p><strong>Index Range Scan</strong></p>
+   <ul>
+      <li>인덱스 선두 컬럼이 가공되지 않은 상태로 조건절에 있어야 Index Range Scan이 가능</li>
+   </ul>
+   <ul>
+      <li>인덱스에서 일정량을 스캔하며서 얻은 ROW ID로 테이블 레코드를 찾음</li>
+   </ul>
+   <ul>
+      <li>시퀀셜 액세스 + Multi Block I/O가 좋아도 소량의 데이터를 찾을 때 테이블 전체를 스캔하는 것은 비효율적이며 큰 테이블에서 소량의 데이터를 찾을 때는 반드시 인덱스를 사용해야 함</li>
+   </ul>
+   <ul>
+      <li>랜덤 액세스 + Single Block I/O</li>
+   </ul>
+   <ul>
+      <li>캐시에서 못 찾으면 레코드 하나를 읽기 위해 매번 I/O Call이 필요하므로 많은 데이터를 읽을 때는 Table Full Scan을 사용하는 것이 유리</li>
+   </ul>
+   <ul>
+      <li>인덱스는 큰 테이블에서 아주 적은 일부의 데이터를 빨리 찾기 위한 도구일 뿐 읽을 데이터가 일정 수량을 넘으면 인덱스보다는 Table Full Scan을 사용하는 것이 유리</li>
+   </ul>
+   <ul>
+      <li>인덱스를 안 타서 느린 경우보다 불필요하게 인덱스를 타서 느린 경우가 더 많음</li>
+   </ul>
+   <ul>
+      <li>예상 카디널리티가 일정량을 넘는 경우 인덱스 스캔을 하지 말고 힌트를 사용하여 Table Full Scan을 유도해야 함</li>
+   </ul>
 <hr>
 </details>
 
@@ -392,14 +429,20 @@
 <details>
   <summary><span style="border-bottom:0.05em solid"><strong>공유 락과 배타 락의 차이는 무엇인가요?</strong></span></summary>
 <hr>
-
+   <p><strong>공유 락</strong></p>
+   <p>공유 Lock은 데이터를 읽을 때 사용되어지는 Lock입니다. 이런 공유 Lock은 공유 Lock 끼리는 동시에 접근이 가능합니다. 즉, 하나의 데이터를 읽는 것은 여러 사용자가 동시에 할 수 있다라는 것입니다. 하지만 공유 Lock이 설정된 데이터에 베타 Lock을 사용할 수는 없습니다.</p>
+   <p><strong>배타 락</strong></p>
+   <p>베타 Lock은 데이터를 변경하고자 할 때 사용되며, 트랜잭션이 완료될 때까지 유지됩니다. 베타락은 Lock이 해제될 때까지 다른 트랜잭션(읽기 포함)은 해당 리소스에 접근할 수 없습니다. 또한 해당 Lock은 다른 트랜잭션이 수행되고 있는 데이터에 대해서는 접근하여 함께 Lock을 설정할 수 없습니다.</p>
 <hr>
 </details>
 
 <details>
   <summary><span style="border-bottom:0.05em solid"><strong>데드락이란 무엇이며, 어떻게 발생할까요?</strong></span></summary>
 <hr>
-
+   <p><strong>교착 상태(Dead Lock)</strong></p>
+   <p>여러 개의 트랜잭션들이 실행을 하지 못하고 서로 무한정 기다리는 상태</p>
+   <p>기본적으로 데이터베이스에서는 트랜잭션들의 동시성을 제어하기 위한 기법으로 로킹을 사용합니다. 이러한 로킹이 데이터가 엉망진창이 되는 것을 막아주겠지만 반면에 그 부작용으로 교착 상태를 일으킬 수 있습니다.</p>
+   <p>두 개 이상의 트랜잭션이 특정 자원(테이블 또는 행)의 Lock을 획득한 채 다른 트랜잭션이 소유하고 있는 잠금을 요구하면 아무리 기다려도 상황이 바뀌지 않는 상태가 되는데 이때 교착 상태에 빠지게 됩니다.</p>
 <hr>
 </details>
 
